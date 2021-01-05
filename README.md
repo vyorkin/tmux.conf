@@ -13,7 +13,7 @@ My tmux config
 * Symlink `tmux.conf` to `~/.tmux.conf`:
 
 ```sh
-ln -sf $(pwd)/tmux.conf ~/.tmux.conf`
+ln -sf $(pwd)/tmux.conf ~/.tmux.conf
 ```
 
 * Symlink [tmux plugin manager](https://github.com/tmux-plugins/tpm)
