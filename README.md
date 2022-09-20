@@ -19,7 +19,13 @@ ln -sf $(pwd)/tmux.conf ~/.tmux.conf
 * Symlink [tmux plugin manager](https://github.com/tmux-plugins/tpm)
 
 ```sh
+mkdir -p ~/.tmux/plugins
 ln -sf $(pwd)/tmux/plugins/tpm ~/.tmux/plugins/tpm
+```
+
+Install plugins via CLI:
+```sh
+~/.tmux/plugins/tpm/bin/install_plugins
 ```
 
 ## Extra
