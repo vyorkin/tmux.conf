@@ -2,6 +2,12 @@
 
 My tmux config
 
+## Requirements
+
+```
+brew install dark-notify
+```
+
 ## Setup
 
 * Clone this repo with submodules
