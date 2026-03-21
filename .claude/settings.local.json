@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(find ~/.tmux/plugins -type d -name *mighty*)",
+      "Bash(git push:*)",
+      "Bash(tmux show-environment:*)",
+      "Bash(tmux:*)",
+      "Bash(find /Users/vyorkin/projects/personal/tmux.conf -type f -name *.conf -o -name *.md -o -name *.txt)",
+      "Bash(git checkout:*)"
+    ]
+  }
+}
