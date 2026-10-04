@@ -1,6 +1,11 @@
 # tmux.conf
 
-My tmux config with automatic dark/light theme switching, vim-style navigation, session persistence, and a curated plugin set.
+My tmux config with automatic theme switching, vim-style navigation, session persistence, and a curated plugin set.
+
+Theme switching works two ways, automatically detected:
+
+- **macOS** — [`tmux-dark-notify`](https://github.com/erikw/tmux-dark-notify) follows the system light/dark appearance.
+- **Linux (Omarchy)** — a `theme-set` hook regenerates the tmux palette from the active Omarchy theme.
 
 ## Overview
 
@@ -8,6 +13,8 @@ The configuration is split across several files:
 
 ```
 tmux.conf                 # Main config — prefix, bindings, plugin settings
+omarchy/
+  tmux-theme.sh           # Omarchy (Linux) theme hook — regenerates the tmux palette
 tmux/
   themes/
     inspired_github.tmux.conf       # Light theme (used with macOS light mode)
@@ -19,7 +26,7 @@ tmux/
     ...           # Remaining plugins installed by TPM at runtime
 ```
 
-`tmux.conf` is the entry point. It sources a theme file chosen automatically by `tmux-dark-notify` based on the current macOS appearance, and loads all plugins via TPM at the end.
+`tmux.conf` is the entry point. At the end it loads all plugins via TPM, then sources a theme: the Omarchy-generated palette when running on Linux/Omarchy, otherwise the `tmux-dark-notify` theme on macOS.
 
 ## How it works
 
@@ -53,7 +60,9 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 
 Copy mode uses vi keys: `v` to select, `V` for rectangle toggle, `Escape` to cancel.
 
-### Dark / light theme switching
+### Theme switching
+
+#### macOS — `tmux-dark-notify`
 
 The `tmux-dark-notify` plugin watches macOS appearance changes (via `dark-notify`) and automatically sources the matching theme file:
 
@@ -61,6 +70,16 @@ The `tmux-dark-notify` plugin watches macOS appearance changes (via `dark-notify
 - **Dark mode** &rarr; `tmux/themes/tomorrow_night.tmux.conf`
 
 The runtime theme state is written to `~/.local/state/tmux/tmux-dark-notify-theme.conf` and sourced on tmux start.
+
+#### Linux (Omarchy) — native theme hook
+
+On Omarchy, tmux follows the active Omarchy theme instead. `omarchy/tmux-theme.sh` is installed as an Omarchy `theme-set` / `post-boot` hook. For every theme change it:
+
+1. resolves semantic colors from `~/.local/state/omarchy/current/theme/colors.toml` through `omarchy-theme-color` (the same parser the rest of the desktop uses),
+2. writes `~/.local/state/tmux/omarchy-theme.conf`, and
+3. sources it into the running tmux server, so the change is instant.
+
+`tmux.conf` sources that generated file on startup, and prefers it over `tmux-dark-notify`; the `tmux-dark-notify` path is only used when the Omarchy hook is not installed.
 
 ### Session persistence
 
@@ -99,9 +118,8 @@ The runtime theme state is written to `~/.local/state/tmux/tmux-dark-notify-them
 
 ## Requirements
 
-```
-brew install dark-notify
-```
+- **macOS**: `brew install dark-notify`
+- **Omarchy (Linux)**: nothing extra — the hook uses the bundled `omarchy-theme-color`.
 
 ## Setup
 
@@ -111,11 +129,26 @@ brew install dark-notify
    git clone https://github.com/vyorkin/tmux.conf.git --recurse-submodules --depth 1
    ```
 
-2. Symlink `tmux.conf` to `~/.tmux.conf`:
+2. Symlink the config into the location tmux actually reads:
+
+   **macOS** — to `~/.tmux.conf`:
 
    ```sh
    ln -sf $(pwd)/tmux.conf ~/.tmux.conf
    ```
+
+   **Omarchy (Linux)** — to the XDG path `~/.config/tmux/tmux.conf`. tmux loads
+   `/etc/tmux.conf`, then `~/.tmux.conf`, then the XDG file, so Omarchy's stock
+   `~/.config/tmux/tmux.conf` would otherwise override this config. Put this
+   config there instead and remove `~/.tmux.conf` so it loads exactly once:
+
+   ```sh
+   ln -sf $(pwd)/tmux.conf ~/.config/tmux/tmux.conf
+   rm -f ~/.tmux.conf
+   ```
+
+   The stock file also lives in `/usr/share/omarchy/config/tmux/tmux.conf` if you
+   ever need it back.
 
 3. Symlink [tmux plugin manager](https://github.com/tmux-plugins/tpm):
 
@@ -129,5 +162,24 @@ brew install dark-notify
    ```sh
    ~/.tmux/plugins/tpm/bin/install_plugins
    ```
+
+   TPM installs plugins under `$XDG_CONFIG_HOME/tmux/plugins` (`~/.config/tmux/plugins`).
+
+5. **(Omarchy only)** install the theme hooks so tmux follows the active theme:
+
+   ```sh
+   mkdir -p ~/.config/omarchy/hooks/theme-set.d ~/.config/omarchy/hooks/post-boot.d
+   ln -sf $(pwd)/omarchy/tmux-theme.sh ~/.config/omarchy/hooks/theme-set.d/tmux
+   ln -sf $(pwd)/omarchy/tmux-theme.sh ~/.config/omarchy/hooks/post-boot.d/tmux
+   ```
+
+   Then run it once to generate the initial palette (or just open tmux):
+
+   ```sh
+   ~/.config/omarchy/hooks/theme-set.d/tmux
+   ```
+
+> **Note:** `omarchy refresh tmux` restores the stock config and will replace the
+> `~/.config/tmux/tmux.conf` symlink. Re-run step 2 if that happens.
 
 TPM is also auto-installed on first tmux start if not already present.
