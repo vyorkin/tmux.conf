@@ -10,3 +10,4 @@ agent: claude
 # #{@workmux_status}; letting workmux patch them per session would freeze the
 # theme colors in that session.
 status_format: false
+nerdfont: true
