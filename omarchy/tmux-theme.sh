@@ -70,6 +70,7 @@ set -g window-status-activity-style "fg=$green,bg=$bg"
 
 set -g pane-border-style "fg=$muted"
 set -g pane-active-border-style "fg=$accent"
+set -g pane-scrollbars-style "fg=$accent,bg=$bg"
 
 set -g message-style "bg=$bg,fg=$accent"
 set -g message-command-style "bg=$bg,fg=$accent"

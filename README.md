@@ -17,6 +17,10 @@ omarchy/
   tmux-theme.sh           # Omarchy (Linux) theme hook — regenerates the tmux palette
 workmux/
   config.yaml             # Global workmux config (~/.config/workmux/config.yaml)
+shell/
+  osc133.zsh              # zsh prompt marks (OSC 133) for tmux
+scripts/
+  notify-command-finished.sh  # Desktop notification for long commands (tmux 3.8+)
 tmux/
   themes/
     inspired_github.tmux.conf       # Light theme (used with macOS light mode)
@@ -53,7 +57,9 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + \|` | Even-horizontal layout |
 | `prefix + r` | Rotate window |
 | `prefix + e` | Toggle pane synchronization |
-| `prefix + Tab` | Last window |
+| `prefix + Tab` | Fuzzy window switcher (tmux 3.8+); last window on older tmux |
+| `prefix + S-Tab` | Fuzzy session switcher (tmux 3.8+) |
+| `prefix + u` | extrakto: fuzzy-pick text, URLs, paths from the pane |
 | `prefix + /` | Copy mode + incremental search |
 | `prefix + C-Space` | Enter copy mode |
 | `prefix + p` | Paste buffer |
@@ -63,9 +69,10 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + P` | Floax menu (resize, embed into the window, ...) |
 | `prefix + a` | workmux: jump to the agent that finished or waits for input |
 | `prefix + W` | workmux dashboard |
+| `prefix + C-t` | Toggle workmux agent sidebar |
 | `Ctrl + h/j/k/l` | Navigate panes (works across vim splits via vim-tmux-navigator) |
 
-Copy mode uses vi keys: `v` to select, `V` for rectangle toggle, `Escape` to cancel.
+Copy mode uses vi keys: `v` to select, `V` for rectangle toggle, `Escape` to cancel. `[` / `]` jump to the previous / next shell prompt, and line numbers are vim-style hybrid (absolute current line, relative others).
 
 ### Theme switching
 
@@ -112,6 +119,23 @@ The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switchi
 - Passthrough enabled for the kitty graphics protocol (images in nvim, yazi)
 - OSC 52 clipboard (works over SSH)
 
+### Shell integration (OSC 133)
+
+`shell/osc133.zsh` marks each prompt, command start, and command end with
+OSC 133 escape sequences inside tmux (Starship doesn't emit them). tmux uses the
+marks for `[` / `]` prompt jumps in copy mode and, on 3.8+, for the
+`pane-command-finished` hook.
+
+### tmux 3.8+
+
+These settings sit in a `%if` version block, so older tmux ignores them:
+
+- `theme terminal`: built-in styles use the terminal palette (the Omarchy colors in kitty) instead of tmux's own light/dark themes
+- Auto-hiding pane scrollbars, colored by the Omarchy theme
+- Copy mode stays live: new output keeps appearing while you scroll back (it follows only at the bottom and pauses during a selection)
+- A desktop notification (`notify-send`) when a command that ran 10s or more finishes in a window you aren't looking at; set `TMUX_NOTIFY_MIN_SECONDS` to change the threshold
+- `prefix + Tab` / `prefix + S-Tab` open the built-in fuzzy window / session switcher
+
 ### Parallel agents — workmux
 
 [workmux](https://github.com/raine/workmux) creates a git worktree plus a tmux
@@ -133,7 +157,7 @@ theme colors after `omarchy theme set`.
 | [tmux-yank](https://github.com/tmux-plugins/tmux-yank) | System clipboard integration |
 | [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) | Seamless `C-h/j/k/l` navigation between vim and tmux |
 | [tmux-menus](https://github.com/jaclu/tmux-menus) | Context menus |
-| [extrakto](https://github.com/laktak/extrakto) | Fuzzy text extraction from panes |
+| [extrakto](https://github.com/laktak/extrakto) | Fuzzy text extraction from panes (`prefix + u`) |
 | [tmux-neolazygit](https://github.com/AngryMorrocoy/tmux-neolazygit) | Lazygit popup |
 | [tmux-mighty-scroll](https://github.com/noscript/tmux-mighty-scroll) | Line-by-line scrolling for man, less, fzf, node, claude |
 | [tmux-dark-notify](https://github.com/erikw/tmux-dark-notify) | Auto dark/light theme switching (macOS only, not loaded on Linux) |
@@ -215,6 +239,12 @@ theme colors after `omarchy theme set`.
    # Status tracking hooks for Claude Code
    claude plugin marketplace add raine/workmux
    claude plugin install workmux-status
+   ```
+
+7. Source the OSC 133 prompt marks from `~/.zshrc`:
+
+   ```sh
+   echo "source $(pwd)/shell/osc133.zsh" >> ~/.zshrc
    ```
 
 > **Note:** `omarchy refresh tmux` restores the stock config and will replace the
