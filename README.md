@@ -15,6 +15,8 @@ The configuration is split across several files:
 tmux.conf                 # Main config — prefix, bindings, plugin settings
 omarchy/
   tmux-theme.sh           # Omarchy (Linux) theme hook — regenerates the tmux palette
+workmux/
+  config.yaml             # Global workmux config (~/.config/workmux/config.yaml)
 tmux/
   themes/
     inspired_github.tmux.conf       # Light theme (used with macOS light mode)
@@ -38,9 +40,11 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 
 | Key | Action |
 |---|---|
-| `prefix + j` | Split vertically (panes side by side) |
-| `prefix + l` | Split horizontally (panes stacked) |
-| `prefix + q` | Kill window |
+| `prefix + j` | Split vertically (panes side by side), in the current directory |
+| `prefix + l` | Split horizontally (panes stacked), in the current directory |
+| `prefix + c` | New window in the current directory |
+| `prefix + q` | Kill window (asks for confirmation) |
+| `prefix + R` | Reload config |
 | `prefix + x` | Kill pane |
 | `prefix + C-h` | Toggle pane zoom |
 | `prefix + J/K/H/L` | Resize panes |
@@ -55,7 +59,10 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + p` | Paste buffer |
 | `prefix + G` | Open lazygit |
 | `Alt + p / n` | Previous / next window |
-| `Alt + t` | Popup scratch terminal (80% size) |
+| `Alt + t` | Toggle floating scratch terminal (floax) |
+| `prefix + P` | Floax menu (resize, embed into the window, ...) |
+| `prefix + a` | workmux: jump to the agent that finished or waits for input |
+| `prefix + W` | workmux dashboard |
 | `Ctrl + h/j/k/l` | Navigate panes (works across vim splits via vim-tmux-navigator) |
 
 Copy mode uses vi keys: `v` to select, `V` for rectangle toggle, `Escape` to cancel.
@@ -99,7 +106,23 @@ The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switchi
 - Mouse enabled
 - Status bar at the top
 - Windows renumber on close
+- Closing the last window of a session switches to another session instead of exiting
 - 256-color + true RGB
+- Extended keys (Shift+Enter, Ctrl+Enter, ...) passed through to apps
+- Passthrough enabled for the kitty graphics protocol (images in nvim, yazi)
+- OSC 52 clipboard (works over SSH)
+
+### Parallel agents — workmux
+
+[workmux](https://github.com/raine/workmux) creates a git worktree plus a tmux
+session per task, with Claude running in it (`workmux add <name>`,
+`workmux merge`, `workmux remove`). `workmux/config.yaml` sets session mode, so
+every worktree is a regular session in sessionx.
+
+Agent status icons (🤖 working, 💬 waiting, ✅ done) are rendered by the window
+formats from `omarchy/tmux-theme.sh` via `#{@workmux_status}`, so workmux's own
+format patching is disabled (`status_format: false`) and the icons keep the
+theme colors after `omarchy theme set`.
 
 ## Plugins
 
@@ -116,12 +139,14 @@ The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switchi
 | [tmux-dark-notify](https://github.com/erikw/tmux-dark-notify) | Auto dark/light theme switching (macOS only, not loaded on Linux) |
 | [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) | Session save/restore |
 | [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) | Automatic periodic saving + auto-restore |
-| [tmux-sessionx](https://github.com/omerxx/tmux-sessionx) | Session picker (`prefix + C-a`) |
+| [tmux-sessionx](https://github.com/omerxx/tmux-sessionx) | Session picker (`prefix + C-a`); unmatched queries open a session from zoxide |
+| [tmux-floax](https://github.com/omerxx/tmux-floax) | Floating scratch terminal (`Alt + t`) |
 
 ## Requirements
 
 - **macOS**: `brew install dark-notify`
 - **Omarchy (Linux)**: nothing extra — the hook uses the bundled `omarchy-theme-color`.
+- **Optional**: [zoxide](https://github.com/ajeetdsouza/zoxide) for sessionx, [workmux](https://github.com/raine/workmux) for parallel agents.
 
 ## Setup
 
@@ -179,6 +204,17 @@ The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switchi
 
    ```sh
    ~/.config/omarchy/hooks/theme-set.d/tmux
+   ```
+
+6. **(Optional)** set up workmux:
+
+   ```sh
+   mise use -g github:raine/workmux
+   mkdir -p ~/.config/workmux
+   ln -sf $(pwd)/workmux/config.yaml ~/.config/workmux/config.yaml
+   # Status tracking hooks for Claude Code
+   claude plugin marketplace add raine/workmux
+   claude plugin install workmux-status
    ```
 
 > **Note:** `omarchy refresh tmux` restores the stock config and will replace the

@@ -63,8 +63,9 @@ set -g status-right-length 100
 set -g status-left "#[fg=$bg,bg=$accent,bold] #S #[fg=$fg,bg=$bg] "
 set -g status-right "$continuum_save#[fg=$accent]#{?pane_in_mode,COPY ,}#{?client_prefix,PREFIX ,}#{?window_zoomed_flag,ZOOM ,}#[fg=$muted]#h "
 
-set -g window-status-format "#[fg=$muted] #I:#W "
-set -g window-status-current-format "#[fg=$accent,bold] #I:#W "
+# #{@workmux_status} shows workmux agent icons (working / waiting / done).
+set -g window-status-format "#[fg=$muted] #I:#W#{?@workmux_status, #{@workmux_status},} "
+set -g window-status-current-format "#[fg=$accent,bold] #I:#W#{?@workmux_status, #{@workmux_status},} "
 set -g window-status-activity-style "fg=$green,bg=$bg"
 
 set -g pane-border-style "fg=$muted"
@@ -77,6 +78,13 @@ set -g mode-style "bg=$accent,fg=$bg"
 # Keep panes flat: no dimming of inactive panes.
 set -g window-style "bg=$bg"
 set -g window-active-style "bg=$bg"
+
+# tmux-floax reads its colors from @options at load time and from the
+# environment afterwards, so set both to recolor it on theme change.
+set -g @floax-border-color "$accent"
+set -g @floax-text-color "$fg"
+set-environment -g FLOAX_BORDER_COLOR "$accent"
+set-environment -g FLOAX_TEXT_COLOR "$fg"
 
 setw -g clock-mode-colour "$accent"
 set -g clock-mode-style 24

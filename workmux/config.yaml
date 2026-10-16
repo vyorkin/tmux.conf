@@ -1,0 +1,12 @@
+# Global workmux config, symlinked to ~/.config/workmux/config.yaml.
+# Run `workmux config reference` for every option.
+
+# One tmux session per worktree, so each one shows up in sessionx.
+mode: session
+
+agent: claude
+
+# Window formats come from omarchy/tmux-theme.sh, which already renders
+# #{@workmux_status}; letting workmux patch them per session would freeze the
+# theme colors in that session.
+status_format: false
