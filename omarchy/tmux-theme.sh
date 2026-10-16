@@ -45,6 +45,13 @@ green=$(color green color2)
 : "${light_bg:=$bg}"
 : "${green:=$accent}"
 
+# tmux-continuum auto-saves through a #() hook it prepends to status-right on
+# load. Re-sourcing this file replaces status-right, so carry the hook along.
+continuum_save=""
+plugin_dir=$(tmux show-environment -g TMUX_PLUGIN_MANAGER_PATH 2>/dev/null | cut -d= -f2-)
+continuum_script="${plugin_dir:-$HOME/.config/tmux/plugins/}tmux-continuum/scripts/continuum_save.sh"
+[[ -x $continuum_script ]] && continuum_save="#($continuum_script)"
+
 cat >"$OUT_FILE" <<EOF
 # Generated from Omarchy theme "$THEME_NAME" by omarchy/tmux-theme.sh.
 # Do not edit by hand — rewritten on every \`omarchy theme set\`.
@@ -54,7 +61,7 @@ set -g status-left-length 30
 set -g status-right-length 100
 
 set -g status-left "#[fg=$bg,bg=$accent,bold] #S #[fg=$fg,bg=$bg] "
-set -g status-right "#[fg=$accent]#{?pane_in_mode,COPY ,}#{?client_prefix,PREFIX ,}#{?window_zoomed_flag,ZOOM ,}#[fg=$muted]#h "
+set -g status-right "$continuum_save#[fg=$accent]#{?pane_in_mode,COPY ,}#{?client_prefix,PREFIX ,}#{?window_zoomed_flag,ZOOM ,}#[fg=$muted]#h "
 
 set -g window-status-format "#[fg=$muted] #I:#W "
 set -g window-status-current-format "#[fg=$accent,bold] #I:#W "

@@ -26,7 +26,7 @@ tmux/
     ...           # Remaining plugins installed by TPM at runtime
 ```
 
-`tmux.conf` is the entry point. At the end it loads all plugins via TPM, then sources a theme: the Omarchy-generated palette when running on Linux/Omarchy, otherwise the `tmux-dark-notify` theme on macOS.
+`tmux.conf` is the entry point. At the end it sources a theme (the Omarchy-generated palette when running on Linux/Omarchy, otherwise the `tmux-dark-notify` theme on macOS), then loads all plugins via TPM. The theme comes first so it doesn't overwrite the auto-save hook that `tmux-continuum` adds to `status-right`.
 
 ## How it works
 
@@ -79,6 +79,8 @@ On Omarchy, tmux follows the active Omarchy theme instead. `omarchy/tmux-theme.s
 2. writes `~/.local/state/tmux/omarchy-theme.conf`, and
 3. sources it into the running tmux server, so the change is instant.
 
+The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switching themes doesn't stop session auto-saving.
+
 `tmux.conf` sources that generated file on startup, and prefers it over `tmux-dark-notify`; the `tmux-dark-notify` path is only used when the Omarchy hook is not installed.
 
 ### Session persistence
@@ -111,7 +113,7 @@ On Omarchy, tmux follows the active Omarchy theme instead. `omarchy/tmux-theme.s
 | [extrakto](https://github.com/laktak/extrakto) | Fuzzy text extraction from panes |
 | [tmux-neolazygit](https://github.com/AngryMorrocoy/tmux-neolazygit) | Lazygit popup |
 | [tmux-mighty-scroll](https://github.com/noscript/tmux-mighty-scroll) | Line-by-line scrolling for man, less, fzf, node, claude |
-| [tmux-dark-notify](https://github.com/erikw/tmux-dark-notify) | Auto dark/light theme switching |
+| [tmux-dark-notify](https://github.com/erikw/tmux-dark-notify) | Auto dark/light theme switching (macOS only, not loaded on Linux) |
 | [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) | Session save/restore |
 | [tmux-continuum](https://github.com/tmux-plugins/tmux-continuum) | Automatic periodic saving + auto-restore |
 | [tmux-sessionx](https://github.com/omerxx/tmux-sessionx) | Session picker (`prefix + C-a`) |
