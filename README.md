@@ -1,6 +1,6 @@
 # tmux.conf
 
-My tmux config with automatic theme switching, vim-style navigation, session persistence, and a curated plugin set.
+My tmux config with automatic theme switching, vim-style navigation, session persistence, parallel AI agents (workmux), shell-aware copy mode, and a curated plugin set. Targets tmux 3.7+, with extra features that switch on automatically under tmux 3.8.
 
 Theme switching works two ways, automatically detected:
 
@@ -57,6 +57,7 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + \|` | Even-horizontal layout |
 | `prefix + r` | Rotate window |
 | `prefix + e` | Toggle pane synchronization |
+| `prefix + C-a` | Session picker (sessionx; unmatched queries jump via zoxide) |
 | `prefix + Tab` | Fuzzy window switcher (tmux 3.8+); last window on older tmux |
 | `prefix + S-Tab` | Fuzzy session switcher (tmux 3.8+) |
 | `prefix + u` | extrakto: fuzzy-pick text, URLs, paths from the pane |
@@ -72,7 +73,17 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + C-t` | Toggle workmux agent sidebar |
 | `Ctrl + h/j/k/l` | Navigate panes (works across vim splits via vim-tmux-navigator) |
 
-Copy mode uses vi keys: `v` to select, `V` for rectangle toggle, `Escape` to cancel. `[` / `]` jump to the previous / next shell prompt, and line numbers are vim-style hybrid (absolute current line, relative others).
+Copy mode uses vi keys:
+
+| Key | Action |
+|---|---|
+| `v` | Begin selection |
+| `V` | Toggle rectangle selection |
+| `[` / `]` | Previous / next shell prompt (needs [OSC 133 marks](#shell-integration-osc-133)) |
+| `r` | Refresh content from the pane (tmux 3.8+; copy mode also refreshes automatically) |
+| `Escape` | Cancel |
+
+Line numbers in copy mode are vim-style hybrid: absolute for the current line, relative for the others.
 
 ### Theme switching
 
@@ -93,7 +104,11 @@ On Omarchy, tmux follows the active Omarchy theme instead. `omarchy/tmux-theme.s
 2. writes `~/.local/state/tmux/omarchy-theme.conf`, and
 3. sources it into the running tmux server, so the change is instant.
 
-The generated `status-right` keeps `tmux-continuum`'s auto-save hook, so switching themes doesn't stop session auto-saving.
+The generated file styles the status bar, window list, pane borders, scrollbars, messages and copy mode, and also carries:
+
+- `tmux-continuum`'s auto-save hook in `status-right`, so switching themes doesn't stop session auto-saving;
+- workmux agent status icons (`#{@workmux_status}`) in the window formats;
+- floax border and text colors (both the `@floax-*` options and the `FLOAX_*` environment it reads at runtime).
 
 `tmux.conf` sources that generated file on startup, and prefers it over `tmux-dark-notify`; the `tmux-dark-notify` path is only used when the Omarchy hook is not installed.
 
@@ -170,7 +185,11 @@ theme colors after `omarchy theme set`.
 
 - **macOS**: `brew install dark-notify`
 - **Omarchy (Linux)**: nothing extra — the hook uses the bundled `omarchy-theme-color`.
-- **Optional**: [zoxide](https://github.com/ajeetdsouza/zoxide) for sessionx, [workmux](https://github.com/raine/workmux) for parallel agents.
+- **tmux 3.7+** (`copy-mode-line-numbers` doesn't exist before 3.7); 3.8 enables the extras listed under [tmux 3.8+](#tmux-38).
+- **Optional**:
+  - [zoxide](https://github.com/ajeetdsouza/zoxide) for sessionx;
+  - [workmux](https://github.com/raine/workmux) for parallel agents, plus a [Nerd Font](https://www.nerdfonts.com/) for its icons (`nerdfont: true`);
+  - `notify-send` (libnotify) for long-command notifications. Without it the hook stays silent.
 
 ## Setup
 
@@ -251,3 +270,9 @@ theme colors after `omarchy theme set`.
 > `~/.config/tmux/tmux.conf` symlink. Re-run step 2 if that happens.
 
 TPM is also auto-installed on first tmux start if not already present.
+
+## Notes
+
+- extrakto is bound to `prefix + u`, not its default `prefix + Tab`, which belongs to last-window / switch-mode here.
+- Hook commands run in the context of the pane that fired them. Don't pass `-t '#{hook_pane}'` inside a hook: the pane formats then expand empty. That's why the long-command notification lives in `scripts/notify-command-finished.sh`, which queries tmux itself.
+- Claude Code's terminal progress bar (OSC 9;4) doesn't reach tmux's own parser, so `#{pane_pb_progress}` stays empty for it. Agent state comes from workmux instead.
