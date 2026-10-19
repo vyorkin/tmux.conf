@@ -50,7 +50,7 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + q` | Kill window (asks for confirmation) |
 | `prefix + R` | Reload config |
 | `prefix + x` | Kill pane |
-| `prefix + C-h` | Toggle pane zoom |
+| `prefix + z` | Toggle pane zoom |
 | `prefix + J/K/H/L` | Resize panes |
 | `prefix + =` | Tiled layout |
 | `prefix + o` | Main-vertical layout |
@@ -71,7 +71,8 @@ The prefix is `Ctrl+Space` (instead of the default `Ctrl+B`). Pressing `Space` a
 | `prefix + a` | workmux: jump to the agent that finished or waits for input |
 | `prefix + W` | workmux dashboard |
 | `prefix + C-t` | Toggle workmux agent sidebar |
-| `Ctrl + h/j/k/l` | Navigate panes (works across vim splits via vim-tmux-navigator) |
+| `Ctrl + h/j/k/l` | Navigate panes; inside Neovim it walks Neovim's windows first, then tmux panes (smart-splits) |
+| `Alt + h/j/k/l` | Resize: Neovim windows inside Neovim, tmux panes elsewhere (smart-splits) |
 
 Copy mode uses vi keys:
 
@@ -170,7 +171,7 @@ theme colors after `omarchy theme set`.
 | [tpm](https://github.com/tmux-plugins/tpm) | Plugin manager |
 | [tmux-sensible](https://github.com/tmux-plugins/tmux-sensible) | Sensible defaults |
 | [tmux-yank](https://github.com/tmux-plugins/tmux-yank) | System clipboard integration |
-| [vim-tmux-navigator](https://github.com/christoomey/vim-tmux-navigator) | Seamless `C-h/j/k/l` navigation between vim and tmux |
+| [backend-tmux](https://github.com/smart-splits-nvim/backend-tmux) | Seamless `C-h/j/k/l` navigation and `M-h/j/k/l` resizing between Neovim and tmux. The tmux side of smart-splits.nvim v3, which ships no multiplexer support in core |
 | [tmux-menus](https://github.com/jaclu/tmux-menus) | Context menus |
 | [extrakto](https://github.com/laktak/extrakto) | Fuzzy text extraction from panes (`prefix + u`) |
 | [tmux-neolazygit](https://github.com/AngryMorrocoy/tmux-neolazygit) | Lazygit popup |
